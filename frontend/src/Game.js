@@ -1,37 +1,31 @@
 import React, { useState, useEffect } from "react";
 
-import Wait from './state/wait.js'
-import Bet from './state/bet.js'
-import Watch from './state/watch.js'
-import Result from './state/result.js'
+import GameState from './GameState.js'
 
 export default function Game (props) {
     const [status, setStatus] = useState('loading')
     
     const url = props.url
     const playerName = props.name
-    
-    const serverStateChange = (data) => {
-        console.log("data received from server! data:")
-        console.log(data)
-    }
-
-    const fetchState = () => {
-        fetch(`${url}/gameState`, {method:"GET"})
-            .then(res => (res.status === 200 ? res.json() : setStatus('fail')))
-            .then(result => serverStateChange(result.data))
-            .catch(err => setStatus('error'))
-    }
 
     useEffect(() => {
-        fetchState()
-        const eventSource = new EventSource(`${url}/gameState-realtime`)
-        eventSource.onmessage = (e) => {
-            serverStateChange(e.data)
-        }
-        return () => {
-            eventSource.close()
-        }
+       const fetchData = async () => {
+            console.log(playerName)
+
+            await fetch(`${url}:8000/joinGame`, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({name: playerName})
+            }).then(() => {
+                // todo start gamestate
+                setStatus('game')
+            })
+       };
+       fetchData();
     });
 
     const renderState = () => {
@@ -54,21 +48,11 @@ export default function Game (props) {
                         weird error encountered. f5?
                     </div>
                 )
-            case 'wait':
+            case 'game':
                 return (
-                    <Wait />
-                )
-            case 'bet':
-                return (
-                    <Bet />
-                )
-            case 'watch':
-                return (
-                    <Watch />
-                )
-            case 'result':
-                return (
-                    <Result />
+                    <div>
+                        <GameState playerName={playerName} url={url} />
+                    </div>
                 )
             default:
                 return (
@@ -80,7 +64,7 @@ export default function Game (props) {
     return (
         <div>
             <h3>Game Time</h3>
-            <p>You are {playerName}, playing the game at {url}</p>
+            <p>You are {playerName}, participating in the game at {url}</p>
             { renderState() }
         </div>
     )
