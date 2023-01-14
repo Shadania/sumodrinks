@@ -11,16 +11,14 @@ export default function GameState(props) {
     const url = props.url
 
     const [status, setStatus] = useState('loading')
-    const [gamers, setGamers] = useState([])
+    const [gamer_info, setGamers] = useState({})
 
     const serverDataReceived = (event) => {
         console.log("Server data received:")
         const data = JSON.parse(event.data)
         console.log(data)
         setStatus(data.state)
-        console.log("gamers(1): ", data.gamerNames)
-        setGamers(data.gamerNames)
-        console.log("gamers(2): ", gamers)
+        setGamers(data.gamer_info)
     }
 
     useEffect(() => {
@@ -58,7 +56,7 @@ export default function GameState(props) {
             <div>
                 gamers:
                 <ul>
-                    {gamers.map(gamer =>
+                    {Object.keys(gamer_info).map(gamer =>
                         <li key={gamer}>{gamer}</li>
                     )}
                 </ul>

@@ -11,29 +11,42 @@ const PORT = 8000
 app.get('/gameState', function(req, res) {
     res.set('Access-Control-Allow-Origin', '*');
     gameData = {
-        state: state,
-        gamerNames: gamerNames
+        state: state(),
+        gamer_info: gamer_info
     }
+    console.log('game state')
     res.status(200).json(gameData)
 })
 
-var state = 'wait'
-var gamers = {}
-var gamerNames = []
+const states = ['wait','bet','watch','result']
+var state_id = 0
+var gamer_res = {}
+var gamer_info = {}
+
+function state() {
+    return states[state_id]
+}
 
 app.post('/joinGame', function(req, res) {
     res.set('Access-Control-Allow-Origin', '*');
     gamerName = req.body.name
 
-    if (gamerName in gamers) {
+    if (gamerName in gamer_res) {
+        console.log('gamer already present: ', gamerName)
         res.status(400).json({msg: 'already present'})
     }
     else {
-        gamers[gamerName] = null
+        gamer_res[gamerName] = null
         console.log(req.body)
-        console.log(`New gamer: ${req.body.name}`)
-        gamerNames.push(gamerName)
+        console.log(`New gamer: ${gamerName}`)
+        gamer_info[gamerName] = {
+            bet: null,
+            drinks: 0,
+            correct: 0
+        }
         res.status(200).json({msg: 'ok'})
+
+        updateGamers()
     }
 })
 
@@ -47,10 +60,11 @@ app.get('/listenGameInfo/:gamerName', function(req, res) {
         'Access-Control-Allow-Origin': '*'
     });
 
-    gamers[gamerName] = res
+    gamer_res[gamerName] = res
+
     gameData = {
-        state: state,
-        gamerNames: gamerNames
+        state: state(),
+        gamer_info: gamer_info
     }
     res.write(`data: ${JSON.stringify(gameData)}`)
     res.write('\n\n')
@@ -58,12 +72,12 @@ app.get('/listenGameInfo/:gamerName', function(req, res) {
 
 function updateGamers() {
     gameData = {
-        state: state,
-        gamerNames: gamerNames
+        state: state(),
+        gamer_info: gamer_info
     }
 
     // how to detect clients having closed?
-    Object.values(gamers).forEach(res => {
+    Object.values(gamer_res).forEach(res => {
         if (res) {
             res.write(
                 `data: ${JSON.stringify(gameData)}`
@@ -75,7 +89,11 @@ function updateGamers() {
 
 app.post('/admin/setState', function(req, res) {
     res.set('Access-Control-Allow-Origin', 'localhost')
-    state = req.body.state
+    // state = req.body.state
+    state_id += 1
+    if (state_id >= states.length)
+        state_id -= states.length
+
     updateGamers()
     res.status(200).json({'msg': "ok"})
 })
