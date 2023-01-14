@@ -101,3 +101,13 @@ app.post('/admin/setState', function(req, res) {
 app.listen(PORT, function() {
     console.log(`Server is running on port ${PORT}.`)
 })
+
+
+
+app.post('/game/vote/:gamerName/:vote', function(req, res) {
+    gamerName = req.params.gamerName
+    vote = req.params.vote
+    gamer_info[gamerName].bet = vote
+    res.status(200).json({msg: 'ok'})
+    updateGamers()
+})

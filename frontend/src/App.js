@@ -36,6 +36,7 @@ export default function App() {
     }
 
     const renderState = () => {
+        console.log('app state ', status)
         switch(status) {
             case 'input':
                 return (

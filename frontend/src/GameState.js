@@ -17,8 +17,8 @@ export default function GameState(props) {
         console.log("Server data received:")
         const data = JSON.parse(event.data)
         console.log(data)
-        setStatus(data.state)
         setGamers(data.gamer_info)
+        setStatus(data.state)
     }
 
     useEffect(() => {
@@ -52,12 +52,19 @@ export default function GameState(props) {
     })
 
     const renderGamers = () => {
+        const voted = (gamer) => {
+            console.log(gamer_info)
+            if (gamer_info[gamer].bet) {
+                return ` (voted ${gamer_info[gamer].bet})`
+            }
+            return ""
+        }
         return (
             <div>
                 gamers:
                 <ul>
                     {Object.keys(gamer_info).map(gamer =>
-                        <li key={gamer}>{gamer}</li>
+                        <li key={gamer}>{gamer}{voted(gamer)}</li>
                     )}
                 </ul>
             </div>
@@ -65,6 +72,7 @@ export default function GameState(props) {
     }
 
     const renderState = () => {
+        console.log('game state ', status)
         switch(status) {
             case 'loading':
                 return (
@@ -78,7 +86,7 @@ export default function GameState(props) {
                 )
             case 'bet':
                 return (
-                    <Bet />
+                    <Bet url={url} playerName={playerName} />
                 )
             case 'watch':
                 return (
