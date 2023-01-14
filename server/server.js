@@ -76,7 +76,7 @@ function updateGamers() {
         gamer_info: gamer_info
     }
 
-    // how to detect clients having closed?
+    // todo how to detect clients having closed?
     Object.values(gamer_res).forEach(res => {
         if (res) {
             res.write(
@@ -87,6 +87,11 @@ function updateGamers() {
     })
 }
 
+function updateGamersResults() {
+    updateGamers()
+    // todo fancy notifs
+}
+
 app.post('/admin/setState', function(req, res) {
     res.set('Access-Control-Allow-Origin', 'localhost')
     // state = req.body.state
@@ -94,7 +99,17 @@ app.post('/admin/setState', function(req, res) {
     if (state_id >= states.length)
         state_id -= states.length
 
-    updateGamers()
+    switch (state()) {
+        case 'wait':
+        case 'bet':
+        case 'watch':
+            updateGamers()
+            break
+        case 'result':
+            updateGamersResults()
+            break
+    }
+
     res.status(200).json({'msg': "ok"})
 })
 
